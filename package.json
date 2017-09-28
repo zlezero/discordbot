@@ -1,0 +1,11 @@
+{
+  "name": "Christophe Malpart",
+  "version": "1.0.0",
+  "description": "Le bot officiel Christophe Malpart",
+  "main": "bot.js",
+  "author": "Zero",
+  "dependencies": {
+    "discord.io": "^2.5.3",
+    "winston": "^2.3.1"
+  }
+}
