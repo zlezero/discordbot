@@ -1,2 +1,1 @@
-["Photooooos","Cascading Style Sheeeets","Et HOP","Ceci est un test !"]
-
+["Photooooos","Cascading Style Sheeeets","Et HOP"]

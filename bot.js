@@ -175,6 +175,8 @@ var command_prefix = "!"
 var citation_filename = "citations.txt"
 var citation_array = []
 
+var isAFK = false
+
 //Au démarrage
 
 client.on('ready', () => {
@@ -192,151 +194,230 @@ client.on('message', message => {
 
   if (message.content.substring(0, 1) == command_prefix)
   {
+	 
+	if (canExecCommand(message.member))
+	{
+		var args = message.content.substring(1).split(' ');
+		var cmd = args[0];    
+		
+		args = args.splice(1); //Arguments présents en plus de la commande
 	  
-	var args = message.content.substring(1).split(' ');
-	var cmd = args[0];    
-	
-	args = args.splice(1); //Arguments présents en plus de la commande
-  
-	switch (cmd) {
-	  
-		case 'ping': 
-		
-			console.log('Commande "ping" envoyée à : ' + message.author.username);
-			message.reply('Pong !');
-			break;
-			
-		case 'citation':
-		
-			console.log('Commande "citation" envoyée à : ' + message.author.username);
-			message.reply(citation_array.randomElement());
-			break;
-			
-	    case 'viewallcitations':
-		
-			console.log('Commande "viewallcitations" envoyée à : ' + message.author.username);
-			message.reply(getAllLines(citation_filename))
-			break;
-			
-		case 'addcitation':
-		
-			console.log('Commande "addcitation" envoyée à : ' + message.author.username);
-			
-			
-			if (checkIfUserHasPerm(message.member, "ADMINISTRATOR"))
-			{				
-		
-				let args_string = args.join(" ");
+		switch (cmd) {
+		  
+			case 'ping': 
 				
-				if (args_string == "")
-				{
-					message.reply("Aucune citation présente :(");
-				}
-				else
-				{
-					//writeLine("citations.txt", args_string);
-					addCitation(citation_filename, args_string);
-					console.log(message.author.username + " a écris : " + args_string + " dans le fichier des citations !");
-					message.reply("Citation : " + args_string + " ajoutée par : " + message.author.username);
-				}
-		
-			}
-			else
-			{
-				console.log(message.author.username + " n'a pas les droits admin pour exécuter la commande !");
-				message.reply("Tu n'a pas les droits :(");
-			}
-			
-			break;
-			
-		case 'deletecitation':
-			
-			console.log('Commande "deletecitation" envoyée à : ' + message.author.username);
-			
-			if (checkIfUserHasPerm(message.member, "ADMINISTRATOR"))
-			{
-				let args_string = args.join(" ");
+				console.log('Commande "ping" envoyée à : ' + message.author.username);
+				message.reply('Pong !');
+				break;
 				
-				if (args_string == "")
-				{
-					message.reply("Aucune ligne sélectionnée :(");
-				}
-				else
-				{
-					deleteLineFromArrayAndFile(citation_filename, args_string);
-					console.log(message.author.username + " a supprimé : " + args_string + " dans le fichier des citations !");
-					message.reply("Citation : " + args_string + " supprimée par : " + message.author.username);
-				}
+			case 'citation':
+			
+				console.log('Commande "citation" envoyée à : ' + message.author.username);
+				message.reply(citation_array.randomElement());
+				break;
 				
-			}
-			else
-			{
-				console.log(message.author.username + " n'a pas les droits admin pour exécuter la commande !");
-				message.reply("Tu n'a pas les droits :(");
-			}
+			case 'viewallcitations':
 			
-			break;
-			
-		case 'reloadcitation':
-		
-			console.log('Commande "reloadcitation" exécutée par : ' + message.author.username);
-
-			if (checkIfUserHasPerm(message.member, "ADMINISTRATOR"))
-			{
-				citation_array = readArrayFromFile(citation_filename);
-				message.reply("Les citations ont été rechargées !");
-			}
-			else
-			{
-				console.log(message.author.username + " n'a pas les droits admin pour exécuter la commande !");
-				message.reply("Tu n'a pas les droits :(");
-			}
-			
-			break;
-			
-		case 'setgame':
-		
-			console.log('Commande "setgame" exécutée par : ' + message.author.username);
-			
-			if (checkIfUserHasPerm(message.member, "ADMINISTRATOR"))
-			{
-				let args_string = args.join(" ");
-				
-				if (args_string == "")
-				{
-					message.reply("Aucune jeu ajouté :(");
+				console.log('Commande "viewallcitations" envoyée à : ' + message.author.username);
+				message.reply({embed: {
+						color: 3447003,
+						author: {
+							name: client.user.username,
+							icon_url: client.user.avatarURL
+						},
+						fields: [{
+							name: "Citations : ",
+							value: citation_array.join(", ")
+						}],
+						timestamp: new Date()
 				}
-				else
-				{
-					console.log("Jeu du bot changé en : " + args_string);
+				});
+				break;
+				
+			case 'addcitation':
+			
+				console.log('Commande "addcitation" exécutée par : ' + message.author.username);
+				
+				
+				if (checkIfUserHasPerm(message.member, "ADMINISTRATOR"))
+				{				
+			
+					let args_string = args.join(" ");
 					
-					client.user.setGame(args_string);
-					message.reply("Jeu changé en : " + args_string + " par : " + message.author.username);
+					if (args_string == "")
+					{
+						message.reply("Aucune citation présente :(");
+					}
+					else
+					{
+						addCitation(citation_filename, args_string);
+						console.log(message.author.username + " a écris : " + args_string + " dans le fichier des citations !");
+						message.reply("Citation : " + args_string + " ajoutée par : " + message.author.username);
+					}
+			
+				}
+				else
+				{
+					console.log(message.author.username + " n'a pas les droits admin pour exécuter la commande !");
+					message.reply("Tu n'a pas les droits :(");
 				}
 				
-			}
-			else
-			{
-				console.log(message.author.username + " n'a pas les droits admin pour exécuter la commande !");
-				message.reply("Tu n'a pas les droits :(");
-			}
+				break;
+				
+			case 'deletecitation':
+				
+				console.log('Commande "deletecitation" exécutée par : ' + message.author.username);
+				
+				if (checkIfUserHasPerm(message.member, "ADMINISTRATOR"))
+				{
+					let args_string = args.join(" ");
+					
+					if (args_string == "")
+					{
+						message.reply("Aucune ligne sélectionnée :(");
+					}
+					else
+					{
+						deleteLineFromArrayAndFile(citation_filename, args_string);
+						console.log(message.author.username + " a supprimé : " + args_string + " dans le fichier des citations !");
+						message.reply("Citation : " + args_string + " supprimée par : " + message.author.username);
+					}
+					
+				}
+				else
+				{
+					console.log(message.author.username + " n'a pas les droits admin pour exécuter la commande !");
+					message.reply("Tu n'a pas les droits :(");
+				}
+				
+				break;
+				
+			case 'reloadcitation':
 			
+				console.log('Commande "reloadcitation" exécutée par : ' + message.author.username);
+
+				if (checkIfUserHasPerm(message.member, "ADMINISTRATOR"))
+				{
+					citation_array = readArrayFromFile(citation_filename);
+					message.reply("Les citations ont été rechargées !");
+				}
+				else
+				{
+					console.log(message.author.username + " n'a pas les droits admin pour exécuter la commande !");
+					message.reply("Tu n'a pas les droits :(");
+				}
+				
+				break;
+				
+			case 'setgame':
 			
-			break;
+				console.log('Commande "setgame" exécutée par : ' + message.author.username);
+				
+				if (checkIfUserHasPerm(message.member, "ADMINISTRATOR"))
+				{
+					let args_string = args.join(" ");
+					
+					if (args_string == "")
+					{
+						message.reply("Aucune jeu ajouté :(");
+					}
+					else
+					{
+						console.log("Jeu du bot changé en : " + args_string);
+						
+						client.user.setGame(args_string);
+						message.reply("Jeu changé en : " + args_string + " par : " + message.author.username);
+					}
+					
+				}
+				else
+				{
+					console.log(message.author.username + " n'a pas les droits admin pour exécuter la commande !");
+					message.reply("Tu n'a pas les droits :(");
+				}
+				
+				
+				break;
 			
-		case 'help':
+			case 'disable':
+				
+				if (checkIfUserHasPerm(message.member, "ADMINISTRATOR"))
+				{
+					if (isAFK)
+					{
+						message.reply("Je suis déjà en pause café !");
+					}
+					else
+					{
+						isAFK = true;
+						client.user.setAFK(true);
+						client.user.setStatus("idle");
+						message.reply("Je vais en pause café !");
+					}
+				}
+				else
+				{
+					console.log(message.author.username + " n'a pas les droits admin pour exécuter la commande !");
+					message.reply("Tu n'a pas les droits :(");
+				}
+				
+				break;
+				
+			case 'enable':
 			
-			console.log(message.author.username + " a demandé l'aide du bot !");
+				if (checkIfUserHasPerm(message.member, "ADMINISTRATOR"))
+				{
+					if (!isAFK)
+					{
+						message.reply("Je suis déjà en cours !");
+					}
+					else
+					{
+						isAFK = false;
+						client.user.setAFK(false);
+						client.user.setStatus("online");
+						message.reply("Je reviens faire cours !");
+					}
+				}
+				else
+				{
+					console.log(message.author.username + " n'a pas les droits admin pour exécuter la commande !");
+					message.reply("Tu n'a pas les droits :(");
+				}
+					
+				break;
+				
+			case 'help':
+				
+				console.log(message.author.username + " a demandé l'aide du bot !");
+				
+				message.reply({embed: {
+					color: 3447003,
+					author: {
+						name: client.user.username,
+						icon_url: client.user.avatarURL
+					},
+					fields: [{
+						name: "Commandes principales : ",
+						value: "!help / !citation" 
+					},
+					{
+						name: "Commandes administrateur :",
+						value : "!viewallcitations / !addcitation <Citation> / !deletecitation <Citation> / !reloadcitation / !setgame <Jeu> / !enable / !disable"
+					}],
+					timestamp: new Date()
+				}
+				
+				});
+				
+				break;
+				
+			case 'debug':
 			
+				break;
 			
-			break;
-			
-		case 'debug':
-		
-			break;
-		
+		}
 	}
-	  
   }
   
 });
@@ -398,6 +479,19 @@ function deleteLineFromArrayAndFile(filename, line){ //On supprime une ligne d'u
 		return true;
 	else
 		return false;
+ }
+ 
+ function canExecCommand(user){
+	 
+	 if (isAFK && !checkIfUserHasPerm(user, "ADMINISTRATOR") && user.id != 228234033358831616)
+	 {
+		 return false;
+	 }
+	 else
+	 {
+		 return true;
+	 }
+	 
  }
  
  Array.prototype.randomElement = function () { //On rajoute une fonction qui tire un élément au hasard dans un tableau
