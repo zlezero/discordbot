@@ -513,7 +513,7 @@ client.on('message', message => {
 					},
 					fields: [{
 						name: "Commandes principales : ",
-						value: "!help / !citation / !viewallcitations" 
+						value: "!help / !citation / !viewallcitations / !credits" 
 					},
 					{
 						name: "Commandes administrateur :",
@@ -524,6 +524,13 @@ client.on('message', message => {
 				
 				});
 				
+				break;
+				
+			case 'credits':
+			
+				console.log('Commande "debug" exécutée par : ' + message.author.username);
+				
+				message.reply("Bot développé par Zero sur une idée originale de : Zero / Babtuh (avec un a) / lonelyCaretaker / Dada / Kodlack");		
 				break;
 				
 			case 'debug':
@@ -541,7 +548,7 @@ client.on('message', message => {
 							console.log("test");					
 							break;
 							
-						case 'coupetat':
+						case 'coupdetat':
 						
 							if (true)
 							{
