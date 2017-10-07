@@ -185,7 +185,7 @@ client.on('ready', () => {
 	
   console.log('Bot connecté !');
   
-  client.user.setGame("Notepad");
+  client.user.setGame("Notepad++");
   
   if (fileExists(citation_filename))
 	citation_array = readArrayFromFile(citation_filename);
@@ -513,11 +513,11 @@ client.on('message', message => {
 					},
 					fields: [{
 						name: "Commandes principales : ",
-						value: "!help / !citation" 
+						value: "!help / !citation / !viewallcitations" 
 					},
 					{
 						name: "Commandes administrateur :",
-						value : "!viewallcitations / !addcitation <Citation> / !deletecitation <Citation> / !reloadcitation / !setgame <Jeu> / !enable / !disable"
+						value : "!addcitation <Citation> / !deletecitation <Citation> / !reloadcitation / !setgame <Jeu> / !enable / !disable"
 					}],
 					timestamp: new Date()
 				}
