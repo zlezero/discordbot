@@ -1,3 +1,1 @@
-Photooooosss
-Cascading Style Sheeeeets
-Et HOP
+["Photooooos","Cascading Style Sheeeets","Et HOP","Ceci est un test !"]

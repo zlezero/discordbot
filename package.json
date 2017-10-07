@@ -6,6 +6,8 @@
   "author": "Zero",
   "dependencies": {
     "discord.io": "^2.5.3",
+    "discord.js": "^11.2.1",
+    "node-opus": "^0.2.7",
     "winston": "^2.3.1"
   }
 }
