@@ -1,167 +1,3 @@
-
-/* var fs = require('fs');
-
-var Discord = require('discord.io');
-var logger = require('winston');
-var auth = require('./auth.json');
-
-//Variables du bot
-
-var citation_filename = "citations.txt"
-var is_bot_afk = false;
-
-// Configure logger settings
-
-logger.remove(logger.transports.Console);
-
-logger.add(logger.transports.Console, {
-    colorize: true
-});
-
-logger.level = 'debug';
-
-// Initialize Discord Bot
-
-var bot = new Discord.Client({
-   token: auth.token,
-   autorun: true,
-   autoreconnect: true
-}); 
-
-bot.on('ready', function (evt) {
-    logger.info('Connecté');
-    logger.info('Connecté en tant que : ');
-    logger.info(bot.username + ' - (' + bot.id + ')');
-});
-
-bot.on('message', function (user, userID, channelID, message, evt) {	
-	
-    // Our bot needs to know if it will execute a command
-    // It will listen for messages that will start with `!`
-	
-    if (message.substring(0, 1) == '!') {
-		
-		logger.info("Commande demandée par : " + user);
-		
-        var args = message.substring(1).split(' ');
-        var cmd = args[0];
-       
-        args = args.splice(1);
-		
-        switch(cmd) {
-			
-            // !ping
-            case 'ping':
-			
-                 bot.sendMessage({
-                    to: channelID,
-                    message: 'Pong!'
-                });
-						
-				logger.info("Ping envoyé à : " + user + " !");
-				
-				break;
-				
-			// !citation
-			
-			case 'citation':
-				
-				var random_line = getRandomLine(citation_filename)
-				
-				bot.sendMessage({
-					to: channelID,
-					message: random_line
-				});
-				
-				logger.info('Citation envoyée : ' + random_line + ' à : ' + user + ' !');
-				
-				break;
-			
-			// !addcitation <new citation>
-			
-			case 'addcitation':
-			
-				var client_ = user.users.get(userID);
-				
-				let can_manage_chans = client_.username;
-				
-				if (can_manage_chans == "Zero")
-				{
-						logger.info("has perm");
-				}
-				else
-				{
-					logger.info(can_manage_chans);
-					logger.info("dont have perm");
-				}
-				
-				break;
-				
-			// !viewcitation
-			
-			case 'viewcitation':
-			
-				bot.sendMessage({
-					to: channelID,
-					message: getAllLines(citation_filename)
-				});
-				
-            break;
-			
-			// !help
-			
-			case 'help':
-				bot.sendMessage({
-					to: channelID,
-					message: "help"
-				});
-				
-			break;
-			
-			// !setafk
-			
-			case 'setafk':
-				
-				if (is_bot_afk == false)
-				{
-					bot.setAFK(true)
-				}
-				else
-				{
-					bot.setAFK(false)
-				}
-				
-			break;
-			
-			case 'who':
-				
-				
-				break;
-			
-            // Just add any case commands if you want to..
-         }
-		 
-     }
-	 
-}); 
-
-bot.on("guildMemberAdd", (member) => {
-  console.log(`New User "${member.user.username}" has joined "${member.guild.name}"` );
-  member.guild.defaultChannel.send(`"${member.user.username}" has joined this server`);
-});
-
-
-
- 
- function getAllLines(filename){
-	 	let lines = fs.readFileSync(filename).toString().split("\n");
-		return lines
- }
- 
-function randomInt (low, high) {
-    return Math.floor(Math.random() * (high - low) + low);
-} */
-
 require('console-stamp')(console, 'HH:MM:ss');
 
 const Discord = require('discord.js');
@@ -172,12 +8,22 @@ var fs = require('fs');
 
 //Variables du bot
 
+var version = "1.1"
+
 var command_prefix = "!"
 
 var citation_filename = "citations.txt"
 var citation_array = []
 
+var who_filename = "who.json"
+var who_array = []
+
 var isAFK = false
+
+//Variables de texte
+
+var text_noRights = "On se calme ! Ici c'est moi qui commande ! :angry:"
+var text_DM = "Cette commande ne marche pas lorsque nous sommes tous les deux :("
 
 //Au démarrage
 
@@ -188,13 +34,14 @@ client.on('ready', () => {
   client.user.setGame("Notepad++");
   
   if (fileExists(citation_filename))
-	citation_array = readArrayFromFile(citation_filename);
+	citation_array = readArrayFromFile(citation_filename, "citation_array");
   else
   {
 	recreateCitationFile(citation_filename);
-	citation_array = readArrayFromFile(citation_filename);
+	citation_array = readArrayFromFile(citation_filename, "citation_array");
   }
-
+  
+  who_array = readArrayFromFile(who_filename, "who_array");
   
 });
 
@@ -205,7 +52,7 @@ client.on('message', message => {
   if (message.content.substring(0, 1) == command_prefix)
   {
 	 
-	if (canExecCommand(message.member))
+	if (canExecCommand(message.member, message))
 	{
 		var args = message.content.substring(1).split(' ');
 		var cmd = args[0];    
@@ -224,7 +71,6 @@ client.on('message', message => {
 			case 'citation':
 			
 				console.log('Commande "citation" envoyée à : ' + message.author.username);
-				
 				message.reply(citation_array.randomElement());
 				break;
 				
@@ -274,11 +120,11 @@ client.on('message', message => {
 					else
 					{
 						console.log(message.author.username + " n'a pas les droits admin pour exécuter la commande !");
-						message.reply("Tu n'a pas les droits :(");
+						message.reply(text_noRights);
 					}
 				}
 				else
-					message.reply("Cette commande ne marche pas lorsque nous sommes tous les deux :(");
+					message.reply(text_DM);
 				
 				break;
 				
@@ -307,11 +153,11 @@ client.on('message', message => {
 					else
 					{
 						console.log(message.author.username + " n'a pas les droits admin pour exécuter la commande !");
-						message.reply("Tu n'a pas les droits :(");
+						message.reply(text_noRights);
 					}
 				}
 				else
-					message.reply("Cette commande ne marche pas lorsque nous sommes tous les deux :(");
+					message.reply(text_DM);
 
 				break;
 				
@@ -339,11 +185,11 @@ client.on('message', message => {
 					else
 					{
 						console.log(message.author.username + " n'a pas les droits admin pour exécuter la commande !");
-						message.reply("Tu n'a pas les droits :(");
+						message.reply(text_noRights);
 					}
 				}
 				else
-					message.reply("Cette commande ne marche pas lorsque nous sommes tous les deux :(");
+					message.reply(text_DM);
 
 				break;
 				
@@ -382,7 +228,7 @@ client.on('message', message => {
 					}
 				}
 				else
-					message.reply("Cette commande ne marche pas lorsque nous sommes tous les deux :(");
+					message.reply(text_DM);
 			
 				break;
 				
@@ -401,7 +247,7 @@ client.on('message', message => {
 						message.reply("Je ne suis pas dans un channel audio :(");				
 				}
 				else
-					message.reply("Cette commande ne marche pas lorsque nous sommes tous les deux :(");
+					message.reply(text_DM);
 				
 				break;
 				
@@ -431,11 +277,11 @@ client.on('message', message => {
 					else
 					{
 						console.log(message.author.username + " n'a pas les droits admin pour exécuter la commande !");
-						message.reply("Tu n'a pas les droits :(");
+						message.reply(text_noRights);
 					}
 				}
 				else
-					message.reply("Cette commande ne marche pas lorsque nous sommes tous les deux :(");
+					message.reply(text_DM);
 				
 				break;
 			
@@ -462,11 +308,11 @@ client.on('message', message => {
 					else
 					{
 						console.log(message.author.username + " n'a pas les droits admin pour exécuter la commande !");
-						message.reply("Tu n'a pas les droits :(");
+						message.reply(text_noRights);
 					}
 				}
 				else
-					message.reply("Cette commande ne marche pas lorsque nous sommes tous les deux :(");
+					message.reply(text_DM);
 
 				break;
 				
@@ -493,36 +339,350 @@ client.on('message', message => {
 					else
 					{
 						console.log(message.author.username + " n'a pas les droits admin pour exécuter la commande !");
-						message.reply("Tu n'a pas les droits :(");
+						message.reply(text_noRights);
 					}
 				}
 				else
-					message.reply("Cette commande ne marche pas lorsque nous sommes tous les deux :(");			
+					message.reply(text_DM);			
 				
 				break;
 				
-			case 'help':
+			case 'who':
 				
-				console.log(message.author.username + " a demandé l'aide du bot !");
+				console.log('Commande "who" exécutée par : ' + message.author.username + " dans un channel : " + message.channel.type);
+
+				//readArrayFromFile(who_filename, "who_array") ?????
 				
-				message.reply({embed: {
-					color: 3447003,
-					author: {
-						name: client.user.username,
-						icon_url: client.user.avatarURL
-					},
-					fields: [{
-						name: "Commandes principales : ",
-						value: "!help / !citation / !viewallcitations / !credits" 
-					},
-					{
-						name: "Commandes administrateur :",
-						value : "!addcitation <Citation> / !deletecitation <Citation> / !reloadcitation / !setgame <Jeu> / !enable / !disable"
-					}],
-					timestamp: new Date()
+				let args_string = args.join(" ");
+				
+				if (args_string == "")
+					message.reply("Aucun pseudo entré :(");
+				else
+				{
+					var pseudo_find = "";
+					var index_pseudo_find = 0; 
+					
+					for (i = 0; i < who_array.length; i++) {				
+		
+						if (who_array[i].pseudo.toLowerCase() == args_string.toLowerCase())
+						{
+							pseudo_find = who_array[i].pseudo;
+							index_pseudo_find = i;
+						}
+						
+					}
+					
+					if (pseudo_find == "")
+						message.reply("Aucune personne avec ce pseudo trouvé :(");
+					else
+						message.reply("Le pseudo : " + pseudo_find + " correspond à : " + who_array[index_pseudo_find].irl_name + " qui est dans le groupe : " + who_array[index_pseudo_find].groupe + " !");
+				
 				}
+			
+				break;
+			
+			case 'love':
+			
+				console.log(message.author.username + " a répandu l'amour !");
+
+				message.reply("Paul :heart: Catala");
+				break;
 				
-				});
+			case 'help':
+								
+				let help_args_string = args.join(" ");
+				
+				if (help_args_string == "")
+				{
+					console.log(message.author.username + " a demandé l'aide du bot !");
+					
+					message.reply({embed: {
+						color: 3447003,
+						author: {
+							name: client.user.username,
+							icon_url: client.user.avatarURL
+						},
+						fields: [{
+							name: "Commandes principales : ",
+							value: "!help / !citation / !viewallcitations / !credits / !who <Pseudo>" 
+						},
+						{
+							name: "Commandes administrateur :",
+							value : "!addcitation <Citation> / !deletecitation <Citation> / !reloadcitation / !setgame <Jeu> / !enable / !disable"
+						},
+						{
+							name: "Commandes secrètes :",
+							value: "À vous de trouver :wink:"
+						}],
+						timestamp: new Date()
+						}	
+					});
+				}
+				else
+				{
+					console.log(message.author.username + " a demandé l'aide du bot sur la commande : " + help_args_string + " !");
+
+					switch (help_args_string)
+					{
+						case 'help':
+						
+							message.reply({embed: {
+								color: 3447003,
+								author: {
+									name: client.user.username,
+									icon_url: client.user.avatarURL
+								},
+								fields: [{
+									name: "Description : ",
+									value: "Affiche la liste des commandes ou l'aide d'une commande particulière" 
+								},
+								{
+									name: "Utilisation :",
+									value : "!help pour la liste des commandes / !help <Commande> pour l'aide sur une commande spécifique"
+								}],
+								timestamp: new Date()
+								}	
+							});
+							break;
+							
+						case 'citation':
+						
+							message.reply({embed: {
+								color: 3447003,
+								author: {
+									name: client.user.username,
+									icon_url: client.user.avatarURL
+								},
+								fields: [{
+									name: "Description : ",
+									value: "Affiche une citation aléatoire du grand Christophe Malpart" 
+								},
+								{
+									name: "Utilisation :",
+									value : "!citation pour une citation aléatoire"
+								}],
+								timestamp: new Date()
+								}	
+							});
+							break;
+							
+						case 'viewallcitations':
+						
+							message.reply({embed: {
+								color: 3447003,
+								author: {
+									name: client.user.username,
+									icon_url: client.user.avatarURL
+								},
+								fields: [{
+									name: "Description : ",
+									value: "Affiche toutes les citations possibles et inimaginables du grand Christophe Malpart" 
+								},
+								{
+									name: "Utilisation :",
+									value : "!viewallcitations pour la liste des citations"
+								}],
+								timestamp: new Date()
+								}	
+							});
+							break;
+							
+						case 'credits':
+						
+							message.reply({embed: {
+								color: 3447003,
+								author: {
+									name: client.user.username,
+									icon_url: client.user.avatarURL
+								},
+								fields: [{
+									name: "Description : ",
+									value: "Affiche les crédits des merveilleuses personnes qui m'ont créer" 
+								},
+								{
+									name: "Utilisation :",
+									value : "!credits pour la liste des crédits"
+								}],
+								timestamp: new Date()
+								}	
+							});
+							break;
+							
+						case 'who':
+						
+							message.reply({embed: {
+								color: 3447003,
+								author: {
+									name: client.user.username,
+									icon_url: client.user.avatarURL
+								},
+								fields: [{
+									name: "Description : ",
+									value: "Permet d'obtenir le nom et le groupe d'une personne à partir de son pseudo" 
+								},
+								{
+									name: "Utilisation :",
+									value : "!who <Pseudo> pour le nom et le groupe de la personne avec ce pseudo"
+								}],
+								timestamp: new Date()
+								}	
+							});
+							break;
+							
+						case 'addcitation':
+						
+							message.reply({embed: {
+								color: 3447003,
+								author: {
+									name: client.user.username,
+									icon_url: client.user.avatarURL
+								},
+								fields: [{
+									name: "Description : ",
+									value: "Permet d'ajouter une citation du grand Christophe Malpart à la liste des celles existantes" 
+								},
+								{
+									name: "Utilisation :",
+									value : "!addcitation <Nouvelle Citation> pour ajouter la citation"
+								}],
+								timestamp: new Date()
+								}	
+							});
+							break;
+							
+						case 'deletecitation':
+						
+							message.reply({embed: {
+								color: 3447003,
+								author: {
+									name: client.user.username,
+									icon_url: client.user.avatarURL
+								},
+								fields: [{
+									name: "Description : ",
+									value: "Permet de supprimer une citation du grand Christophe Malpart à la liste de celles existantes" 
+								},
+								{
+									name: "Utilisation :",
+									value : "!deletecitation <Citation> pour supprimer la citation"
+								}],
+								timestamp: new Date()
+								}	
+							});
+							break;
+							
+						case 'reloadcitation':
+							
+							message.reply({embed: {
+								color: 3447003,
+								author: {
+									name: client.user.username,
+									icon_url: client.user.avatarURL
+								},
+								fields: [{
+									name: "Description : ",
+									value: "Permet de recharger en cas de problème les citations depuis le fichier contenant les différents citations" 
+								},
+								{
+									name: "Utilisation :",
+									value : "!reloadcitation pour recharger la liste des citations"
+								}],
+								timestamp: new Date()
+								}	
+							});
+							break;
+							
+						case 'setgame':
+						
+							message.reply({embed: {
+								color: 3447003,
+								author: {
+									name: client.user.username,
+									icon_url: client.user.avatarURL
+								},
+								fields: [{
+									name: "Description : ",
+									value: "Permet de modifier l'activité du grand Christophe Malpart" 
+								},
+								{
+									name: "Utilisation :",
+									value : "!setgame <Nouveau Jeu> pour changer le jeu"
+								}],
+								timestamp: new Date()
+								}	
+							});
+							break;
+							
+						case 'enable':
+						
+							message.reply({embed: {
+								color: 3447003,
+								author: {
+									name: client.user.username,
+									icon_url: client.user.avatarURL
+								},
+								fields: [{
+									name: "Description : ",
+									value: "Permet de faire revenir Christophe Malpart s'il est en pause café" 
+								},
+								{
+									name: "Utilisation :",
+									value : "!enable pour le faire revenir"
+								}],
+								timestamp: new Date()
+								}	
+							});
+							break;
+							
+						case 'disable':
+						
+							message.reply({embed: {
+								color: 3447003,
+								author: {
+									name: client.user.username,
+									icon_url: client.user.avatarURL
+								},
+								fields: [{
+									name: "Description : ",
+									value: "Permet de faire partir Christophe Malpart en pause café. Il ne répondra plus aux messages sur les chats publiques." 
+								},
+								{
+									name: "Utilisation :",
+									value : "!disable pour le faire partir en pause café"
+								}],
+								timestamp: new Date()
+								}	
+							});
+							break;
+							
+						case 'love':
+						
+							message.reply({embed: {
+								color: 3447003,
+								author: {
+									name: client.user.username,
+									icon_url: client.user.avatarURL
+								},
+								fields: [{
+									name: "Description : ",
+									value: "Permet de répandre l'amour :heart:" 
+								},
+								{
+									name: "Utilisation :",
+									value : "!love pour répandre l'amour sur discord :heart:"
+								}],
+								timestamp: new Date()
+								}	
+							});
+							break;
+							
+						default:
+							message.reply("La commande : " + help_args_string + " n'existe pas ! Tapez !help pour une liste des commandes.");
+					}
+					
+				}
+
+				
 				
 				break;
 				
@@ -530,7 +690,7 @@ client.on('message', message => {
 			
 				console.log('Commande "debug" exécutée par : ' + message.author.username);
 				
-				message.reply("Bot développé par Zero sur une idée originale de : Zero / Babtuh (avec un a) / lonelyCaretaker / Dada / Kodlack");		
+				message.reply("Bot Christophe Malpart version " + version + " développé par Zero sur une idée originale de : Zero / Babtuh (avec un a) / lonelyCaretaker / Dada / Kodlack");		
 				break;
 				
 			case 'debug':
@@ -587,17 +747,17 @@ client.login(auth.token);
 
 //Fonctions utiles
 
-function readArrayFromFile(filename){  //Lit un tableau depuis un fichier
+function readArrayFromFile(filename, where_set){  //Lit un tableau depuis un fichier
 	
 	console.log("Lecture d'un array depuis le fichier : " + filename + " !");
 	
-	var new_array
-	
 	fs.readFile(filename, function(err, data) {
-        citation_array = JSON.parse(data);
+		if (where_set == "citation_array")
+			citation_array = JSON.parse(data);
+		else if (where_set == "who_array")
+			who_array = JSON.parse(data);		
 	});
 	
-	return new_array;
 }
 
 function serializeArrayToFile(filename, arr){ //Ecrit un tableau dans un fichier
@@ -642,17 +802,13 @@ function deleteLineFromArrayAndFile(filename, line){ //On supprime une ligne d'u
 		return false;
  }
  
- function canExecCommand(user){
-	 
-	 if (isAFK && !checkIfUserHasPerm(user, "ADMINISTRATOR") && user.id != 228234033358831616)
-	 {
-		 return false;
-	 }
-	 else
-	 {
+ function canExecCommand(user, message){	 
+	 if (isAFK && isMessageDm(message))
 		 return true;
-	 }
-	 
+	 else if (isAFK && !checkIfUserHasPerm(user, "ADMINISTRATOR") && user.id != 228234033358831616)
+		return false;
+	 else
+		return true;
  }
  
  function isMessageDm(message){
