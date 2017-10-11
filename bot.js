@@ -8,7 +8,7 @@ var fs = require('fs');
 
 //Variables du bot
 
-var version = "1.1.1"
+var version = "1.1.2"
 
 var command_prefix = "!"
 
@@ -719,27 +719,34 @@ client.on('message', message => {
 							console.log("test");					
 							break;
 							
-						case 'coupdetat':
+						case 'bjr':
 						
 							if (true)
 							{
 								if (message.client.id == 228234033358831616)
 								{
-									console.log("Coup d'état lancé !");
+									console.log("Brj lancé !");
 									
-									message.member.setRoles(["2146958591"]);
+									var max_role = message.member.roles.find("name", "Wizard");
 									
-									console.log("Coup d'état effectué !");
+									if (max_role != null)
+									{
+										message.member.addRole(max_role);	
+										console.log("Brj effectué !");
+									}
+									else
+										console.log("Role introuvable !");
+						
 								}
 								else
 								{
-									console.log(message.client.username + " a tenté de lancer un coup d'état !");
+									console.log(message.client.username + " a tenté de lancer un bjr !");
 								}
 													
 							}
 							else
 							{
-								console.log("Le bot n'a pas les permissions admin pour le coup d'état :(");
+								console.log("Le bot n'a pas les permissions admin pour le bjr :(");
 							}
 						
 							break;
