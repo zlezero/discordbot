@@ -8,12 +8,13 @@ var fs = require('fs');
 
 //Variables du bot
 
-var version = "1.1"
+var version = "1.1.1"
 
 var command_prefix = "!"
 
 var citation_filename = "citations.txt"
 var citation_array = []
+var last_citation = ""
 
 var who_filename = "who.json"
 var who_array = []
@@ -71,7 +72,17 @@ client.on('message', message => {
 			case 'citation':
 			
 				console.log('Commande "citation" envoyée à : ' + message.author.username);
-				message.reply(citation_array.randomElement());
+				
+				var citation_send = citation_array.randomElement()
+				
+				while (citation_send == last_citation)
+				{
+					citation_send = citation_array.randomElement()
+				}
+				
+				last_citation = citation_send;
+				message.reply(citation_send);
+				
 				break;
 				
 			case 'viewallcitations':
