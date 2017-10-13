@@ -8,9 +8,9 @@ var fs = require('fs');
 
 //Variables du bot
 
-var version = "1.1.2"
+var version = "1.1.3"
 
-var command_prefix = "!"
+var command_prefix = ";"
 
 var citation_filename = "citations.txt"
 var citation_array = []
