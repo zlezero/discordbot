@@ -8,7 +8,7 @@ var fs = require('fs');
 
 //Variables du bot
 
-var version = "1.1.3"
+var version = "1.1.4"
 
 var command_prefix = ";"
 
@@ -415,11 +415,11 @@ client.on('message', message => {
 						},
 						fields: [{
 							name: "Commandes principales : ",
-							value: "!help / !citation / !viewallcitations / !credits / !who <Pseudo>" 
+							value: command_prefix + "help / " + command_prefix + "citation / " + command_prefix + "viewallcitations / " + command_prefix + "credits / " + command_prefix + "who <Pseudo>" 
 						},
 						{
 							name: "Commandes administrateur :",
-							value : "!addcitation <Citation> / !deletecitation <Citation> / !reloadcitation / !setgame <Jeu> / !enable / !disable"
+							value : command_prefix + "addcitation <Citation> / " + command_prefix + "deletecitation <Citation> / " + command_prefix + "reloadcitation / " + command_prefix + "setgame <Jeu> / " + command_prefix + "enable / " + command_prefix + "disable"
 						},
 						{
 							name: "Commandes secrètes :",
@@ -449,7 +449,7 @@ client.on('message', message => {
 								},
 								{
 									name: "Utilisation :",
-									value : "!help pour la liste des commandes / !help <Commande> pour l'aide sur une commande spécifique"
+									value : command_prefix + "help pour la liste des commandes / " + command_prefix + "help <Commande> pour l'aide sur une commande spécifique"
 								}],
 								timestamp: new Date()
 								}	
@@ -470,7 +470,7 @@ client.on('message', message => {
 								},
 								{
 									name: "Utilisation :",
-									value : "!citation pour une citation aléatoire"
+									value : command_prefix + "citation pour une citation aléatoire"
 								}],
 								timestamp: new Date()
 								}	
@@ -491,7 +491,7 @@ client.on('message', message => {
 								},
 								{
 									name: "Utilisation :",
-									value : "!viewallcitations pour la liste des citations"
+									value : command_prefix + "viewallcitations pour la liste des citations"
 								}],
 								timestamp: new Date()
 								}	
@@ -512,7 +512,7 @@ client.on('message', message => {
 								},
 								{
 									name: "Utilisation :",
-									value : "!credits pour la liste des crédits"
+									value : command_prefix + "credits pour la liste des crédits"
 								}],
 								timestamp: new Date()
 								}	
@@ -533,7 +533,11 @@ client.on('message', message => {
 								},
 								{
 									name: "Utilisation :",
-									value : "!who <Pseudo> pour le nom et le groupe de la personne avec ce pseudo"
+									value : command_prefix + "who <Pseudo> pour le nom et le groupe de la personne avec ce pseudo"
+								},
+								{
+									name: "Exemple :",
+									value: command_prefix + "who Zero"
 								}],
 								timestamp: new Date()
 								}	
@@ -554,7 +558,11 @@ client.on('message', message => {
 								},
 								{
 									name: "Utilisation :",
-									value : "!addcitation <Nouvelle Citation> pour ajouter la citation"
+									value : command_prefix + "addcitation <Nouvelle Citation> pour ajouter la citation"
+								},
+								{
+									name: "Exemple :",
+									value: command_prefix + "addcitation Photooooos"
 								}],
 								timestamp: new Date()
 								}	
@@ -575,7 +583,11 @@ client.on('message', message => {
 								},
 								{
 									name: "Utilisation :",
-									value : "!deletecitation <Citation> pour supprimer la citation"
+									value : command_prefix + "deletecitation <Citation> pour supprimer la citation"
+								},
+								{
+									name: "Exemple :",
+									value: command_prefix + "deletecitation Photooooos"
 								}],
 								timestamp: new Date()
 								}	
@@ -596,7 +608,7 @@ client.on('message', message => {
 								},
 								{
 									name: "Utilisation :",
-									value : "!reloadcitation pour recharger la liste des citations"
+									value : command_prefix + "reloadcitation pour recharger la liste des citations"
 								}],
 								timestamp: new Date()
 								}	
@@ -617,7 +629,11 @@ client.on('message', message => {
 								},
 								{
 									name: "Utilisation :",
-									value : "!setgame <Nouveau Jeu> pour changer le jeu"
+									value : command_prefix + "setgame <Nouveau Jeu> pour changer le jeu"
+								},
+								{
+									name: "Exemple :",
+									value: command_prefix + "setgame Notepad++"
 								}],
 								timestamp: new Date()
 								}	
@@ -638,7 +654,7 @@ client.on('message', message => {
 								},
 								{
 									name: "Utilisation :",
-									value : "!enable pour le faire revenir"
+									value : command_prefix + "enable pour le faire revenir"
 								}],
 								timestamp: new Date()
 								}	
@@ -659,7 +675,7 @@ client.on('message', message => {
 								},
 								{
 									name: "Utilisation :",
-									value : "!disable pour le faire partir en pause café"
+									value : command_prefix + "disable pour le faire partir en pause café"
 								}],
 								timestamp: new Date()
 								}	
@@ -680,7 +696,7 @@ client.on('message', message => {
 								},
 								{
 									name: "Utilisation :",
-									value : "!love pour répandre l'amour sur discord :heart:"
+									value : command_prefix + "love pour répandre l'amour sur discord :heart:"
 								}],
 								timestamp: new Date()
 								}	
@@ -688,7 +704,7 @@ client.on('message', message => {
 							break;
 							
 						default:
-							message.reply("La commande : " + help_args_string + " n'existe pas ! Tapez !help pour une liste des commandes.");
+							message.reply("La commande : " + help_args_string + " n'existe pas ! Tapez " + command_prefix + "help pour une liste des commandes.");
 					}
 					
 				}
