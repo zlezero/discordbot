@@ -8,7 +8,7 @@ var fs = require('fs');
 
 //Variables du bot
 
-var version = "1.1.4"
+var version = "1.2.1"
 
 var command_prefix = ";"
 
