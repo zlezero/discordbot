@@ -495,7 +495,7 @@ client.on('message', message => {
 			
 				console.log(message.author.username + " a voulu l'amour de Catala !");
 				
-				message.reply("On m'a dis que Catala t'aimais :heart:");
+				message.reply("On m'a dit que Catala t'aimais :heart:");
 				
 				break;
 				
