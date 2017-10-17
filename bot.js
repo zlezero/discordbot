@@ -19,6 +19,9 @@ var last_citation = ""
 var who_filename = "who.json"
 var who_array = []
 
+var audio_filename = "audio_file_list.txt"
+var audio_array = []
+
 var isAFK = false
 
 //Variables de texte
@@ -43,6 +46,7 @@ client.on('ready', () => {
   }
   
   who_array = readArrayFromFile(who_filename, "who_array");
+  audio_array = readArrayFromFile(audio_filename, "audio_array");
   
 });
 
@@ -232,9 +236,7 @@ client.on('message', message => {
 								.catch(console.log);
 						}
 						else
-						{
 							message.reply("Tu n'est pas dans un channel audio :(");
-						}
 						
 					}
 				}
@@ -256,6 +258,59 @@ client.on('message', message => {
 					}					
 					else
 						message.reply("Je ne suis pas dans un channel audio :(");				
+				}
+				else
+					message.reply(text_DM);
+				
+				break;
+				
+			case 'random':
+				
+				console.log('Commande "random" exécutée par : ' + message.author.username);
+				
+				if (!isMessageDm(message))
+				{
+					if (IsPresentInAudioChannel())
+					{
+						let args_string = args.join(" ");
+					
+						if (args_string == "")
+						{
+							if (message.member.voiceChannel)
+								audio_random(message.member.voiceChannel);
+							else
+								message.reply("Aucun channel audio ou utilisateur spécifié et tu n'est pas dans un channel audio :(");
+						}
+						else
+						{
+							if (message.mentions.users.first())
+							{							
+									if (message.mentions.members.first().voiceChannel)
+										audio_random(message.mentions.members.first().voiceChannel);
+									else
+										message.reply(message.mentions.members.first().user.username + " n'est pas dans un channel audio :(");		
+							}
+							else
+							{
+								var is_channel_find = false;
+								
+								message.guild.channels.forEach(function (item){
+									
+									if (item.type == "voice" && item.name.toLowerCase() == args_string.toLowerCase())
+									{
+										is_channel_find = true;
+										audio_random(item);
+									}
+									
+								});
+								
+								if (!is_channel_find)
+									message.reply("La mention ou le nom de channel audio est invalide :(");
+							}
+						}
+					}
+					else
+						message.reply("Je suis déjà dans un channel audio :(");				
 				}
 				else
 					message.reply(text_DM);
@@ -370,15 +425,30 @@ client.on('message', message => {
 					message.reply("Aucun pseudo entré :(");
 				else
 				{
+					
 					var pseudo_find = "";
 					var index_pseudo_find = 0; 
 					
-					for (i = 0; i < who_array.length; i++) {				
+					if (message.mentions.users.first())
+					{						
+						for (i = 0; i < who_array.length; i++) {				
 		
-						if (who_array[i].pseudo.toLowerCase() == args_string.toLowerCase())
-						{
-							pseudo_find = who_array[i].pseudo;
-							index_pseudo_find = i;
+							if (who_array[i].pseudo.toLowerCase() == message.mentions.members.first().user.username.toLowerCase())
+							{
+								pseudo_find = who_array[i].pseudo;
+								index_pseudo_find = i;
+							}		
+						}
+					}
+					else
+					{
+						for (i = 0; i < who_array.length; i++) {				
+		
+							if (who_array[i].pseudo.toLowerCase() == args_string.toLowerCase())
+							{
+								pseudo_find = who_array[i].pseudo;
+								index_pseudo_find = i;
+							}		
 						}
 						
 					}
@@ -395,8 +465,38 @@ client.on('message', message => {
 			case 'love':
 			
 				console.log(message.author.username + " a répandu l'amour !");
+				
+				let args_string_love = args.join(" ");
+					
+				if (args_string_love == "")
+					message.reply("Paul :heart: Catala");
+				else
+					
+					if (!isMessageDm(message))
+					{
+						if (message.mentions.users.first())
+						{
+							if (message.mentions.users.array().length >= 2)
+								message.reply(message.mentions.members.first().user.username + " :heart: " + message.mentions.members.array()[1].user.username);
+							else
+								message.reply("Il vous faut une deuxième personne pour répandre l'amour !");
+						}
+						else
+							message.reply("Il vous faut mentionner les deux personnes pour répandre l'amour ! :heart:");
 
-				message.reply("Paul :heart: Catala");
+					}
+					else
+						message.reply("Tu dois répandre l'amour en public ! :heart:");
+					
+				
+				break;
+				
+			case 'catala':
+			
+				console.log(message.author.username + " a voulu l'amour de Catala !");
+				
+				message.reply("On m'a dis que Catala t'aimais :heart:");
+				
 				break;
 				
 			case 'help':
@@ -533,11 +633,11 @@ client.on('message', message => {
 								},
 								{
 									name: "Utilisation :",
-									value : command_prefix + "who <Pseudo> pour le nom et le groupe de la personne avec ce pseudo"
+									value : command_prefix + "who <Pseudo> ou " + command_prefix + "who @Mention_Pseudo pour le nom et le groupe de la personne avec ce pseudo"
 								},
 								{
 									name: "Exemple :",
-									value: command_prefix + "who Zero"
+									value: command_prefix + "who Zero / " + command_prefix + "who @Zero#8658"
 								}],
 								timestamp: new Date()
 								}	
@@ -696,7 +796,7 @@ client.on('message', message => {
 								},
 								{
 									name: "Utilisation :",
-									value : command_prefix + "love pour répandre l'amour sur discord :heart:"
+									value : command_prefix + "love pour répandre l'amour sur discord :heart / " + command_prefix + "love @Pseudo1 @Pseudo2 pour répandre l'amour entre deux personnes :heart:"
 								}],
 								timestamp: new Date()
 								}	
@@ -781,6 +881,22 @@ client.login(auth.token);
 
 //Fonctions utiles
 
+function audio_random(voice_channel){ //Fonction correspondant à la commande !random
+			
+			voice_channel.join()
+							
+			.then(connection => { // Connection is an instance of VoiceConnection
+													
+				var file_to_play = audio_array.randomElement();
+								
+				const dispatcher = connection.playFile(file_to_play);
+								
+				dispatcher.on("end", end => {connection.disconnect();});
+								
+			})
+			.catch(console.log);
+}
+
 function readArrayFromFile(filename, where_set){  //Lit un tableau depuis un fichier
 	
 	console.log("Lecture d'un array depuis le fichier : " + filename + " !");
@@ -790,6 +906,8 @@ function readArrayFromFile(filename, where_set){  //Lit un tableau depuis un fic
 			citation_array = JSON.parse(data);
 		else if (where_set == "who_array")
 			who_array = JSON.parse(data);		
+		else if (where_set == "audio_array")
+			audio_array = JSON.parse(data);		
 	});
 	
 }
