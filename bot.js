@@ -208,7 +208,7 @@ client.on('message', message => {
 
 				break;
 				
-			case 'play':
+			case 'play_debug':
 			
 				console.log('Commande "joinchannel" exécutée par : ' + message.author.username);
 
@@ -230,7 +230,7 @@ client.on('message', message => {
 								
 									message.reply('Connexion réussie au channel audio !');
 									
-									connection.playArbitraryInput("http://geekologie.meximas.com/GameManager/ALittleBitCloser.mp3")
+						
 									
 								})
 								.catch(console.log);
