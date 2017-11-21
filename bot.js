@@ -8,7 +8,7 @@ var fs = require('fs');
 
 //Variables du bot
 
-var version = "1.2.1"
+var version = "1.2.2"
 
 var command_prefix = ";"
 
@@ -140,7 +140,6 @@ client.on('message', message => {
 				}
 				else
 					message.reply(text_DM);
-				
 				break;
 				
 			case 'deletecitation':
@@ -447,6 +446,7 @@ client.on('message', message => {
 							if (who_array[i].pseudo.toLowerCase() == args_string.toLowerCase())
 							{
 								pseudo_find = who_array[i].pseudo;
+								statut = who_array[i].statut;
 								index_pseudo_find = i;
 							}		
 						}
@@ -456,8 +456,13 @@ client.on('message', message => {
 					if (pseudo_find == "")
 						message.reply("Aucune personne avec ce pseudo trouvé :(");
 					else
-						message.reply("Le pseudo : " + pseudo_find + " correspond à : " + who_array[index_pseudo_find].irl_name + " qui est dans le groupe : " + who_array[index_pseudo_find].groupe + " !");
-				
+					{
+						if (statut == "Professeur")
+							message.reply("Le pseudo : " + pseudo_find + " correspond à : " + who_array[index_pseudo_find].irl_name + " qui est un professeur !");						
+						else
+							message.reply("Le pseudo : " + pseudo_find + " correspond à : " + who_array[index_pseudo_find].irl_name + " qui est dans le groupe : " + who_array[index_pseudo_find].groupe + " !");
+					}
+
 				}
 			
 				break;
@@ -808,16 +813,14 @@ client.on('message', message => {
 					}
 					
 				}
-
-				
-				
+		
 				break;
 				
 			case 'credits':
 			
 				console.log('Commande "debug" exécutée par : ' + message.author.username);
 				
-				message.reply("Bot Christophe Malpart version " + version + " développé par Zero sur une idée originale de : Zero / Babtuh (avec un a) / lonelyCaretaker / Dada / Kodlack");		
+				message.reply("Bot Christophe Malpart version " + version + " développé sur une idée originale de : Babtuh (avec un a) / lonelyCaretaker / Dada / Kodlack");		
 				break;
 				
 			case 'debug':
@@ -843,7 +846,7 @@ client.on('message', message => {
 								{
 									console.log("Brj lancé !");
 									
-									var max_role = message.member.roles.find("name", "Wizard");
+									let max_role = message.guild.roles.find("name", "Dieu");
 									
 									if (max_role != null)
 									{
