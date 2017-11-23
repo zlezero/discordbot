@@ -96,6 +96,24 @@
 			"groupe": "A"
 		},
 		{
+			"pseudo": "Karim",
+			"irl_name": "Karim ?.",
+			"statut": "Étudiant",
+			"groupe": "A"
+		},
+		{
+			"pseudo": "Anis-92",
+			"irl_name": "Anis ?.",
+			"statut": "Étudiant",
+			"groupe": "B"
+		},
+		{
+			"pseudo": "MiniLepers",
+			"irl_name": "Léo P.",
+			"statut": "Étudiant",
+			"groupe": "B"
+		},
+		{
 			"pseudo": "Dr Algo",
 			"irl_name": "M. Auger",
 			"statut": "Professeur",

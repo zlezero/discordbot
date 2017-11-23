@@ -8,7 +8,7 @@ var fs = require('fs');
 
 //Variables du bot
 
-var version = "1.2.2"
+var version = "1.3.0"
 
 var command_prefix = ";"
 
@@ -21,6 +21,14 @@ var who_array = []
 
 var audio_filename = "audio_file_list.txt"
 var audio_array = []
+
+var moderation_filename = "moderation_list.txt"
+var moderation_array = []
+
+var game_to_set_filename = "game_set.txt"
+var game_to_set = [""]
+
+channels_profs = [];
 
 var isAFK = false
 
@@ -35,7 +43,6 @@ client.on('ready', () => {
 	
   console.log('Bot connecté !');
   
-  client.user.setGame("Notepad++");
   
   if (fileExists(citation_filename))
 	citation_array = readArrayFromFile(citation_filename, "citation_array");
@@ -44,11 +51,23 @@ client.on('ready', () => {
 	recreateCitationFile(citation_filename);
 	citation_array = readArrayFromFile(citation_filename, "citation_array");
   }
-  
+
   who_array = readArrayFromFile(who_filename, "who_array");
   audio_array = readArrayFromFile(audio_filename, "audio_array");
-  
+  moderation_array = readArrayFromFile(moderation_filename, "moderation_array");
+  game_to_set = readArrayFromFile(game_to_set_filename, "game");    
+
 });
+
+
+/* client.on('guildMemberAdd', member => {
+	// Send the message to a designated channel on a server:
+	const channel = member.guild.channels.find('name', 'member-log');
+	// Do nothing if the channel wasn't found on this server
+	if (!channel) return;
+	// Send the message, mentioning the member
+	channel.send(`Bienvenue, ${member} dans le serveur ! Merci d'indiquer : Nom, prénom et groupe.`);
+ }); */
 
 //A chaque message
 
@@ -56,7 +75,9 @@ client.on('message', message => {
 
   if (message.content.substring(0, 1) == command_prefix)
   {
-	 
+
+	Moderation(message);
+
 	if (canExecCommand(message.member, message))
 	{
 		var args = message.content.substring(1).split(' ');
@@ -207,7 +228,7 @@ client.on('message', message => {
 
 				break;
 				
-			case 'play_debug':
+			case 'play':
 			
 				console.log('Commande "joinchannel" exécutée par : ' + message.author.username);
 
@@ -229,7 +250,7 @@ client.on('message', message => {
 								
 									message.reply('Connexion réussie au channel audio !');
 									
-						
+									connection.playArbitraryInput("http://geekologie.meximas.com/GameManager/ALittleBitCloser.mp3")
 									
 								})
 								.catch(console.log);
@@ -335,6 +356,8 @@ client.on('message', message => {
 							console.log("Jeu du bot changé en : " + args_string);
 							
 							client.user.setGame(args_string);
+							game_to_set[0] = args_string;
+							serializeArrayToFile(game_to_set_filename, game_to_set);
 							message.reply("Jeu changé en : " + args_string + " par : " + message.author.username);
 						}
 						
@@ -471,10 +494,10 @@ client.on('message', message => {
 			
 				console.log(message.author.username + " a répandu l'amour !");
 				
-				let args_string_love = args.join(" ");
-					
+				let args_string_love = args.join(" "); 
+
 				if (args_string_love == "")
-					message.reply("Paul :heart: Catala");
+					message.reply("Paul :heart: C.");
 				else
 					
 					if (!isMessageDm(message))
@@ -482,7 +505,14 @@ client.on('message', message => {
 						if (message.mentions.users.first())
 						{
 							if (message.mentions.users.array().length >= 2)
-								message.reply(message.mentions.members.first().user.username + " :heart: " + message.mentions.members.array()[1].user.username);
+							{
+								//if (message.mentions.roles.array()[0].id != 273836007701348354 || message.mentions.roles.array()[1].id != 273836007701348354)
+
+								//if (273836007701348354 in message.mentions.members.roles.id)
+									message.reply(message.mentions.members.first().user.username + " :heart: " + message.mentions.members.array()[1].user.username);
+								//else
+									//message.delete();
+							}
 							else
 								message.reply("Il vous faut une deuxième personne pour répandre l'amour !");
 						}
@@ -500,7 +530,7 @@ client.on('message', message => {
 			
 				console.log(message.author.username + " a voulu l'amour de Catala !");
 				
-				message.reply("On m'a dit que Catala t'aimais :heart:");
+				message.reply("On m'a dis que C. t'aimais :heart:");
 				
 				break;
 				
@@ -877,12 +907,56 @@ client.on('message', message => {
 		}
 	}
   }
+  else
+	  Moderation(message);
   
 });
  
 client.login(auth.token);
 
 //Fonctions utiles
+
+function Moderation(message) //Modère les messages dans les channels demandés
+{
+
+		if (channels_profs.length == 0) //On regarde les channels dans lesquels les profs sont
+		{
+			console.log("Init Modération !");
+	
+			roles_array = message.channel.guild.roles.array();
+			channel_array = message.guild.channels.array();
+		
+			for (var i = 0; i < channel_array.length; i++)
+			{	
+				roles_array = channel_array[i].guild.roles.array();
+		
+				for (var j = 0; j < roles_array.length; j++)
+				{
+					//console.log("Role " + i + " : " + roles_array[j].id);
+		
+					if ((roles_array[j].id == 380978607130017792 || roles_array[j].id == 273836007701348354) && channel_array[i].type == "text")
+					{
+						channels_profs.push(channel_array[i].id);
+					}
+				}
+			}
+		}
+	
+		for (var l = 0; l < channels_profs.length; l++) //Si le message a été posté dans un des channels où un prof est présent alors on traite le message
+		{
+			if (channels_profs[l] == message.channel.id)
+			{
+				for (var i = 0; i < moderation_array.length; i++) {
+					if (message.content.toLowerCase().includes(moderation_array[i])) {
+						console.log("Modération du message : " + message.content + " de : " + message.author.username);
+						message.delete();
+						break;
+					}
+				}
+			}
+		}
+
+}
 
 function audio_random(voice_channel){ //Fonction correspondant à la commande !random
 			
@@ -911,6 +985,30 @@ function readArrayFromFile(filename, where_set){  //Lit un tableau depuis un fic
 			who_array = JSON.parse(data);		
 		else if (where_set == "audio_array")
 			audio_array = JSON.parse(data);		
+		else if (where_set == "moderation_array")
+			moderation_array = JSON.parse(data);
+		else if (where_set == "game")
+		{
+			if (fileExists(game_to_set_filename))
+			{
+				game_to_set = JSON.parse(data);
+				
+				if (game_to_set == undefined || game_to_set[0] == "")
+				{
+				  serializeArrayToFile(game_to_set_filename, ["Notepad++"]);
+				  client.user.setGame("Notepad++");	
+				}
+				else
+				  client.user.setGame(game_to_set[0]);	
+			}
+			else
+			{
+				serializeArrayToFile(game_to_set_filename, ["Notepad++"]);
+				client.user.setGame("Notepad++");	
+			}
+
+
+		}
 	});
 	
 }
