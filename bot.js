@@ -76,7 +76,8 @@ client.on('message', message => {
   if (message.content.substring(0, 1) == command_prefix)
   {
 
-	Moderation(message);
+	if (message.channel.type == "text")
+		Moderation(message);
 
 	if (canExecCommand(message.member, message))
 	{
@@ -908,7 +909,11 @@ client.on('message', message => {
 	}
   }
   else
-	  Moderation(message);
+  {
+	if (message.channel.type == "text")
+		Moderation(message);
+  }
+
   
 });
  
@@ -918,7 +923,6 @@ client.login(auth.token);
 
 function Moderation(message) //Modère les messages dans les channels demandés
 {
-
 		if (channels_profs.length == 0) //On regarde les channels dans lesquels les profs sont
 		{
 			console.log("Init Modération !");
