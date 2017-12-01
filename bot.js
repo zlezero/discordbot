@@ -8,7 +8,7 @@ var fs = require('fs');
 
 //Variables du bot
 
-var version = "1.3.0"
+var version = "1.3.1"
 
 var command_prefix = ";"
 
@@ -60,14 +60,14 @@ client.on('ready', () => {
 });
 
 
-/* client.on('guildMemberAdd', member => {
+client.on('guildMemberAdd', member => {
 	// Send the message to a designated channel on a server:
 	const channel = member.guild.channels.find('name', 'member-log');
 	// Do nothing if the channel wasn't found on this server
 	if (!channel) return;
 	// Send the message, mentioning the member
-	channel.send(`Bienvenue, ${member} dans le serveur ! Merci d'indiquer : Nom, prénom et groupe.`);
- }); */
+	channel.send(`Bienvenue, ${member} dans le serveur ! Merci d'indiquer : Nom, prénom et groupe. Merci !`);
+ });
 
 //A chaque message
 
@@ -85,7 +85,7 @@ client.on('message', message => {
 		var cmd = args[0];    
 		
 		args = args.splice(1); //Arguments présents en plus de la commande
-	  
+				
 		switch (cmd) {
 		  
 			case 'ping': 
@@ -534,6 +534,20 @@ client.on('message', message => {
 				message.reply("On m'a dis que C. t'aimais :heart:");
 				
 				break;
+
+			case 'voila':
+
+				var messageC = "";
+				var nbrVoila = getRandomArbitrary(1, 10);
+				
+				console.log(message.author.username + " a dit Voilà " + nbrVoila + " fois !");
+
+				for (var i = 0; i < nbrVoila; i++)
+					messageC += "Voilà ! ";
+
+				message.reply(messageC);
+
+				break;
 				
 			case 'help':
 								
@@ -752,6 +766,7 @@ client.on('message', message => {
 							break;
 							
 						case 'setgame':
+
 						
 							message.reply({embed: {
 								color: 3447003,
@@ -838,9 +853,32 @@ client.on('message', message => {
 								}	
 							});
 							break;
+
+						case 'voila':
 							
+							message.reply({embed: {
+								color: 3447003,
+								author: {
+									name: client.user.username,
+									icon_url: client.user.avatarURL
+								},
+								fields: [{
+									name: "Description : ",
+									value: "Permet de je ne sais pas en fait..." 
+								},
+								{
+									name: "Utilisation :",
+									value : command_prefix + "voila pour dire voilà aléatoirement de une à dix fois ! Voilà !"
+								}],
+								timestamp: new Date()
+								}	
+							});
+
+							break;
+
 						default:
 							message.reply("La commande : " + help_args_string + " n'existe pas ! Tapez " + command_prefix + "help pour une liste des commandes.");
+							
 					}
 					
 				}
@@ -849,7 +887,7 @@ client.on('message', message => {
 				
 			case 'credits':
 			
-				console.log('Commande "debug" exécutée par : ' + message.author.username);
+				console.log('Commande "credits" exécutée par : ' + message.author.username);
 				
 				message.reply("Bot Christophe Malpart version " + version + " développé sur une idée originale de : Babtuh (avec un a) / lonelyCaretaker / Dada / Kodlack");		
 				break;
@@ -922,7 +960,9 @@ client.login(auth.token);
 //Fonctions utiles
 
 function Moderation(message) //Modère les messages dans les channels demandés
-{
+{		
+		CheckMalpart(message);
+
 		if (channels_profs.length == 0) //On regarde les channels dans lesquels les profs sont
 		{
 			console.log("Init Modération !");
@@ -951,7 +991,7 @@ function Moderation(message) //Modère les messages dans les channels demandés
 			if (channels_profs[l] == message.channel.id)
 			{
 				for (var i = 0; i < moderation_array.length; i++) {
-					if (message.content.toLowerCase().includes(moderation_array[i])) {
+					if (message.content.toLowerCase() == moderation_array[i]) {
 						console.log("Modération du message : " + message.content + " de : " + message.author.username);
 						message.delete();
 						break;
@@ -960,6 +1000,14 @@ function Moderation(message) //Modère les messages dans les channels demandés
 			}
 		}
 
+}
+
+function CheckMalpart(message)
+{
+	const EmojiMalpart = client.emojis.find("name", ":heart:");
+
+	if (message.content.toLowerCase().includes("malpart"))
+		message.react("361106291273236490");
 }
 
 function audio_random(voice_channel){ //Fonction correspondant à la commande !random
@@ -1142,3 +1190,7 @@ function writeArrayToFile(filename, arr){
 	); 
 	
 }
+
+function getRandomArbitrary(min, max) {
+	return Math.round(Math.random() * (max - min) + min);
+  }
