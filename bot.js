@@ -3,7 +3,7 @@ require('console-stamp')(console, 'HH:MM:ss');
 const Discord = require('discord.js');
 const client = new Discord.Client();
 
-var auth = os.environ.get('TOKENDISCORD');
+var auth = process.env.TOKENDISCORD;
 var fs = require('fs');
 
 //Variables du bot
